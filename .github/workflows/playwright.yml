@@ -1,0 +1,37 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Chromium Browser
+      # මෙතන --with-deps chromium දැම්මම අනෙක් browsers (Firefox/WebKit) දාන්නේ නැතුව speed එක වැඩි වෙනවා
+      run: npx playwright install --with-deps chromium
+
+    - name: Run Playwright tests
+      # අපි හදපු chromium project එක විතරක් run කරන්න කියනවා
+      run: npx playwright test --project=chromium
+
+    - name: Upload Report
+      uses: actions/upload-artifact@v4
+      # ටෙස්ට් එක fail වුණත් රිපෝට් එක අප්ලෝඩ් වෙන්න ඕනේ නිසා 'always()' දාමු
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
